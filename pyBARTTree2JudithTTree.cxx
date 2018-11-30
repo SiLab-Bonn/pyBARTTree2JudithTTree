@@ -119,12 +119,26 @@ int pyBARTTree2JudithTTree(const char* input_file_name, const char* output_file_
 	hits->Branch("PosZ", judith_hit_pos_z, "HitPosZ[NHits]/D");
 
 	// Judith event
-	event->Branch("TimeStamp", &judith_time_stamp, "TimeStamp/l");
-	event->Branch("FrameNumber", &judith_frame_number, "FrameNumber/l");
-	event->Branch("TriggerOffset", &judith_trigger_offset, "TriggerOffset/I");
-	event->Branch("TriggerInfo", &judith_trigger_info, "TriggerInfo/I");
-	event->Branch("Invalid", &judith_invalid, "Invalid/O");
-	const Long64_t n_entries = pybar_table->GetEntriesFast();
+	Long64_t n_entries_events = 0;
+	if (fill_event) {
+		event->Branch("TimeStamp", &judith_time_stamp, "TimeStamp/l");
+		event->Branch("FrameNumber", &judith_frame_number, "FrameNumber/l");
+		event->Branch("TriggerOffset", &judith_trigger_offset, "TriggerOffset/I");
+		event->Branch("TriggerInfo", &judith_trigger_info, "TriggerInfo/I");
+		event->Branch("Invalid", &judith_invalid, "Invalid/O");
+	} else {
+		event->SetBranchAddress("TimeStamp", &judith_time_stamp);
+		event->SetBranchAddress("FrameNumber", &judith_frame_number);
+		event->SetBranchAddress("TriggerOffset", &judith_trigger_offset);
+		event->SetBranchAddress("TriggerInfo", &judith_trigger_info);
+		event->SetBranchAddress("Invalid", &judith_invalid);
+		n_entries_events = event->GetEntriesFast();
+		if (n_entries_events == 0) {
+			std::cout << "Event TTree empty" << std::endl;
+			throw;
+		}
+	}
+	Long64_t n_entries = pybar_table->GetEntriesFast();
 
 	for (Long64_t i = 0; i < n_entries; i++) {
 		// entries will be overwritten in array
@@ -140,26 +154,23 @@ int pyBARTTree2JudithTTree(const char* input_file_name, const char* output_file_
 		for (Long64_t j = 0; j < array_n_entries; j++) {
 			// new event
 			if (pybar_event_number[j] != curr_event_number) {
-				// filling branch with current event
-				if (event_counter != 0) {
-					hits->Fill();
-					if (fill_event) {
-						event->Fill();
-					}
-				}
 				// in case max_events is set and reached
-				if (max_events > 0 && event_counter >= max_events) {
+				if (fill_event && max_events > 0 && event_counter >= max_events) {
 					reached_max_events = true;
 					std::cout << "reached max. events " << max_events << " at chunk " << i+1 << " index " << j << std::endl;
 					break;
 				}
-				event_counter++;
+				if (!fill_event && n_entries_events < event_counter+1) {
+					reached_max_events = true;
+					std::cout << "reached max. events " << max_events << " in " << plane << " at chunk " << i+1 << " index " << j << std::endl;
+					break;
+				}
+				// read current
 				curr_event_number = pybar_event_number[j];
-				judith_n_hits = 0;
 				if (fill_event) { // add event to event TTree
 					// fill event
 					judith_time_stamp = (ULong64_t) pybar_trigger_time_stamp[j];
-					judith_frame_number = (ULong64_t) pybar_event_number[j];
+					judith_frame_number = (ULong64_t) curr_event_number;
 					judith_trigger_offset = 0;
 					judith_trigger_info = 0;
 					// check for unknown words
@@ -168,7 +179,27 @@ int pyBARTTree2JudithTTree(const char* input_file_name, const char* output_file_
 					} else {
 						judith_invalid = 0;
 					}
+					event->Fill();
+				} else {
+					Long64_t bytes = event->GetEntry(event_counter);
+					if (bytes == 0) {
+						std::cout << "invalid event in " << plane << " at chunk " << i+1 << " index " << j << std::endl;
+						throw;
+					}
+					// check if event number of current plane is equal to event number in Event TTree
+					if (judith_frame_number != (ULong64_t) curr_event_number) {
+						std::cout << "event number mismatch in " << plane << " at chunk " << i+1 << " index " << j << std::endl;
+						throw;
+					}
 				}
+				// fill hits TTree, take care of first event
+				if (event_counter != 0) {
+					hits->Fill();
+				}
+				// increment event counter
+				event_counter++;
+				// set hits array size to 0
+				judith_n_hits = 0;
 			}
 
 			if ((pybar_column[j] == 0 || pybar_row[j] == 0) && judith_n_hits == 0) { // empty event, no hit
@@ -182,7 +213,6 @@ int pyBARTTree2JudithTTree(const char* input_file_name, const char* output_file_
 					std::cout << "found invalid hit at chunk " << i+1 << " index " << j << std::endl;
 					throw;
 				}
-				// fill hits TTree
 				// pyBAR: starting col / row from 1
 				// Judith: starting col / row from 0
 				judith_hit_pix_x[judith_n_hits] = (Int_t) (pybar_column[j] - 1);
@@ -201,11 +231,8 @@ int pyBARTTree2JudithTTree(const char* input_file_name, const char* output_file_
 			break;
 		}
 	}
-
+	// fill hits TTree of last event
 	hits->Fill();
-	if (fill_event) {
-		event->Fill();
-	}
 
 	j_file->Write();
 	j_file->Close();
