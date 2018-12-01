@@ -134,7 +134,7 @@ int pyBARTTree2JudithTTree(const char* input_file_name, const char* output_file_
 		event->SetBranchAddress("Invalid", &judith_invalid);
 		n_entries_events = event->GetEntriesFast();
 		if (n_entries_events == 0) {
-			std::cout << "Event TTree empty" << std::endl;
+			std::cout << "Event TTree is empty" << std::endl;
 			throw;
 		}
 	}
@@ -160,9 +160,9 @@ int pyBARTTree2JudithTTree(const char* input_file_name, const char* output_file_
 					std::cout << "reached max. events " << max_events << " at chunk " << i+1 << " index " << j << std::endl;
 					break;
 				}
-				if (!fill_event && n_entries_events < event_counter+1) {
+				if (!fill_event && event_counter >= n_entries_events) {
 					reached_max_events = true;
-					std::cout << "reached max. events " << max_events << " in " << plane << " at chunk " << i+1 << " index " << j << std::endl;
+					std::cout << "reached max. events " << n_entries_events << " in " << plane << " at chunk " << i+1 << " index " << j << std::endl;
 					break;
 				}
 				// read current
@@ -233,6 +233,11 @@ int pyBARTTree2JudithTTree(const char* input_file_name, const char* output_file_
 	}
 	// fill hits TTree of last event
 	hits->Fill();
+	// check for missing events
+	if (!fill_event && event_counter < n_entries_events) {
+		std::cout << "missing " << n_entries_events-event_counter << " events in " << plane << std::endl;
+		throw;
+	}
 
 	j_file->Write();
 	j_file->Close();
