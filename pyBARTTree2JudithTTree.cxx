@@ -3,7 +3,7 @@
  */
 
 #include <iostream>
-#include <algorithm>
+#include <math.h>
 
 #include <TFile.h>
 #include <TTree.h>
@@ -11,7 +11,7 @@
 #include <TDirectory.h>
 
 
-int pyBARTTree2JudithTTree(const char* input_file_name, const char* output_file_name, const char* plane = "Plane0", const char* mode = "RECREATE", bool fill_event = true, Long64_t max_events = 0) {
+int pyBARTTree2JudithTTree(const char* input_file_name, const char* output_file_name, const char* plane = "Plane0", const char* mode = "RECREATE", bool fill_event = true, Long64_t max_events = 0, bool check_timestamp = true) {
 	// Call with: root -l -b -q "pyBARTTree2JudithTTree.cxx(\"input.root\", \"output.root\", \"Plane0\", \"RECREATE\", 1, 0))"
 	// To add another plane: root -l -b -q "pyBARTTree2JudithTTree.cxx(\"input.root\", \"output.root\", \"Plane1\", \"UPDATE\", 0, 0))"
 
@@ -54,6 +54,14 @@ int pyBARTTree2JudithTTree(const char* input_file_name, const char* output_file_
 	Long64_t event_counter = 0;
 	Long64_t curr_event_number = -1; // set to invalid event number
 	bool reached_max_events = false;
+
+	// timestamp
+	ULong64_t judith_last_time_stamp;
+	ULong64_t judith_delta_time_stamp;
+	ULong64_t current_time_stamp;
+	ULong64_t last_time_stamp;
+	ULong64_t delta_time_stamp;
+	Float_t time_stamp_ratio;
 
 	// pyBAR arrays
 	Long64_t pybar_n_entries;
@@ -166,10 +174,11 @@ int pyBARTTree2JudithTTree(const char* input_file_name, const char* output_file_
 					break;
 				}
 				// read current
+				current_time_stamp = pybar_trigger_time_stamp[j];
 				curr_event_number = pybar_event_number[j];
 				if (fill_event) { // add event to event TTree
 					// fill event
-					judith_time_stamp = (ULong64_t) pybar_trigger_time_stamp[j];
+					judith_time_stamp = (ULong64_t) current_time_stamp;
 					judith_frame_number = (ULong64_t) curr_event_number;
 					judith_trigger_offset = 0;
 					judith_trigger_info = 0;
@@ -191,6 +200,26 @@ int pyBARTTree2JudithTTree(const char* input_file_name, const char* output_file_
 						std::cout << "event number mismatch in " << plane << " at chunk " << i+1 << " index " << j << std::endl;
 						throw;
 					}
+					if (check_timestamp && event_counter>=1) {
+						if (judith_time_stamp >= judith_last_time_stamp) {
+							judith_delta_time_stamp = (judith_time_stamp-judith_last_time_stamp);
+						} else {
+							judith_delta_time_stamp = judith_time_stamp+(pow(2, 31)-judith_last_time_stamp);
+						}
+						if (current_time_stamp >= last_time_stamp) {
+							delta_time_stamp = (current_time_stamp-last_time_stamp);
+						} else {
+							delta_time_stamp = current_time_stamp+(pow(2, 31)-last_time_stamp);
+						}
+						time_stamp_ratio = (Float_t) judith_delta_time_stamp / (Float_t) delta_time_stamp;
+						if (time_stamp_ratio < (1-pow(1, -2)) || time_stamp_ratio > (1+pow(1, -2))) {
+							std::cout << "event timestamp mismatch in " << plane << " at chunk " << i+1 << " index " << j << std::endl;
+							throw;
+						}
+
+					}
+					judith_last_time_stamp = judith_time_stamp;
+					last_time_stamp = current_time_stamp;
 				}
 				// fill hits TTree, take care of first event
 				if (event_counter != 0) {
