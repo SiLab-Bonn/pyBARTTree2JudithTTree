@@ -90,6 +90,11 @@ int pyBARTTree2JudithTTree(const char* input_file_name, const char* output_file_
 	Int_t judith_hit_value[MAX_HITS];
 	Int_t judith_hit_timing[MAX_HITS];
 	Int_t judith_hit_in_cluster[MAX_HITS];
+	UShort_t judith_tdc[MAX_HITS];
+	UShort_t judith_tdc_time_stamp[MAX_HITS];
+	UChar_t judith_trigger_status[MAX_HITS];
+	UShort_t judith_event_status[MAX_HITS];
+
 
 	// Event arrays
 	ULong64_t judith_time_stamp;
@@ -125,6 +130,11 @@ int pyBARTTree2JudithTTree(const char* input_file_name, const char* output_file_
 	hits->Branch("PosX", judith_hit_pos_x, "HitPosX[NHits]/D");
 	hits->Branch("PosY", judith_hit_pos_y, "HitPosY[NHits]/D");
 	hits->Branch("PosZ", judith_hit_pos_z, "HitPosZ[NHits]/D");
+	hits->Branch("Tdc", judith_tdc, "HitTdc[NHits]/s");
+	hits->Branch("TdcTs", judith_tdc_time_stamp, "HitTdcTs[NHits]/s");
+	hits->Branch("TriggerStatus", judith_trigger_status, "HitTriggerStatus[NHits]/b");
+	hits->Branch("EventStatus", judith_event_status, "HitEventStatus[NHits]/s");
+
 
 	// Judith event
 	Long64_t n_entries_events = 0;
@@ -252,6 +262,11 @@ int pyBARTTree2JudithTTree(const char* input_file_name, const char* output_file_
 				judith_hit_pos_x[judith_n_hits] = 0.0; // not calculated
 				judith_hit_pos_y[judith_n_hits] = 0.0; // not calculated
 				judith_hit_pos_z[judith_n_hits] = 0.0; // not calculated
+				judith_tdc[judith_n_hits] = (UShort_t) pybar_tdc[j];
+				judith_tdc_time_stamp[judith_n_hits] = (UShort_t) pybar_tdc_time_stamp[j];
+				judith_trigger_status[judith_n_hits] = (UChar_t) pybar_trigger_status[j];
+				judith_event_status[judith_n_hits] = (UShort_t) pybar_event_status[j];
+
 				judith_n_hits++;
 			}
 		}
