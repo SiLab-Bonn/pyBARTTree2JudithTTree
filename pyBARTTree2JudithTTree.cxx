@@ -75,7 +75,7 @@ int pyBARTTree2JudithTTree(const char* input_file_name, const char* output_file_
 	UChar_t pybar_tot[BUF_SIZE];
 	UShort_t pybar_bcid[BUF_SIZE];
 	UShort_t pybar_tdc[BUF_SIZE];
-	UChar_t pybar_tdc_time_stamp[BUF_SIZE];
+	UShort_t pybar_tdc_time_stamp[BUF_SIZE];
 	UChar_t pybar_trigger_status[BUF_SIZE];
 	UInt_t pybar_service_record[BUF_SIZE];
 	UShort_t pybar_event_status[BUF_SIZE];
