@@ -20,7 +20,7 @@ int pyBARTTree2JudithTTree(const char* input_file_name, const char* output_file_
 	static const Int_t MAX_HITS = 4000;
 
 	// pyBAR ROOT file
-	TFile* i_file = new TFile(input_file_name);
+	TFile* i_file = new TFile(input_file_name, "READ");
 	TTree* pybar_table = (TTree*) i_file->Get("Hits");
 
 	// Judith ROOT file
@@ -283,8 +283,11 @@ int pyBARTTree2JudithTTree(const char* input_file_name, const char* output_file_
 		throw;
 	}
 
-	j_file->Write();
+	i_file->Close();
+	delete i_file;
+	j_file->Write(0, TObject::kOverwrite);
 	j_file->Close();
+	delete j_file;
 
 	return event_counter;
 }
