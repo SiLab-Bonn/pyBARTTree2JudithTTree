@@ -21,21 +21,21 @@ int pyBARTTree2JudithTTree(const char* input_file_name, const char* output_file_
 
 	// pyBAR ROOT file
 	TFile* i_file = new TFile(input_file_name, "READ");
-	TTree* pybar_table = (TTree*) i_file->Get("Hits");
+	TTree* pybar_ttree = (TTree*) i_file->Get("Hits");
 
 	// Judith ROOT file
 	TFile* j_file = new TFile(output_file_name, mode);
-	TTree* event;
+	TTree* event_ttree;
 	if (fill_event) {
-		event = (TTree*) j_file->Get("Event");
-		if (event != 0) {
+		event_ttree = (TTree*) j_file->Get("Event");
+		if (event_ttree != 0) {
 			std::cout << "Event TTree already exists" << std::endl;
 			throw;
 		}
-		event = new TTree("Event", "Event");
+		event_ttree = new TTree("Event", "Event");
 	} else {
-		event = (TTree*) j_file->Get("Event");
-		if (event == 0) {
+		event_ttree = (TTree*) j_file->Get("Event");
+		if (event_ttree == 0) {
 			std::cout << "Event TTree not existing" << std::endl;
 			throw;
 		}
@@ -48,7 +48,7 @@ int pyBARTTree2JudithTTree(const char* input_file_name, const char* output_file_
 		throw;
 		//j_file->cd(plane);
 	}
-	TTree* hits = new TTree("Hits", "Hits");
+	TTree* hits_ttree = new TTree("Hits", "Hits");
 
 	// event number and counter
 	Long64_t event_counter = 0;
@@ -104,63 +104,63 @@ int pyBARTTree2JudithTTree(const char* input_file_name, const char* output_file_
 	Bool_t judith_invalid;
 
 	// pyBAR branches
-	pybar_table->SetBranchAddress("n_entries", &pybar_n_entries);
-	pybar_table->SetBranchAddress("event_number", pybar_event_number);
-	pybar_table->SetBranchAddress("trigger_number", pybar_trigger_number);
-	pybar_table->SetBranchAddress("trigger_time_stamp", pybar_trigger_time_stamp);
-	pybar_table->SetBranchAddress("relative_BCID", pybar_relative_bcid);
-	pybar_table->SetBranchAddress("LVL1ID", pybar_lvl1id);
-	pybar_table->SetBranchAddress("column", pybar_column);
-	pybar_table->SetBranchAddress("row", pybar_row);
-	pybar_table->SetBranchAddress("tot", pybar_tot);
-	pybar_table->SetBranchAddress("BCID", pybar_bcid);
-	pybar_table->SetBranchAddress("TDC", pybar_tdc);
-	pybar_table->SetBranchAddress("TDC_time_stamp", pybar_tdc_time_stamp);
-	pybar_table->SetBranchAddress("trigger_status", pybar_trigger_status);
-	pybar_table->SetBranchAddress("service_record", pybar_service_record);
-	pybar_table->SetBranchAddress("event_status", pybar_event_status);
+	pybar_ttree->SetBranchAddress("n_entries", &pybar_n_entries);
+	pybar_ttree->SetBranchAddress("event_number", pybar_event_number);
+	pybar_ttree->SetBranchAddress("trigger_number", pybar_trigger_number);
+	pybar_ttree->SetBranchAddress("trigger_time_stamp", pybar_trigger_time_stamp);
+	pybar_ttree->SetBranchAddress("relative_BCID", pybar_relative_bcid);
+	pybar_ttree->SetBranchAddress("LVL1ID", pybar_lvl1id);
+	pybar_ttree->SetBranchAddress("column", pybar_column);
+	pybar_ttree->SetBranchAddress("row", pybar_row);
+	pybar_ttree->SetBranchAddress("tot", pybar_tot);
+	pybar_ttree->SetBranchAddress("BCID", pybar_bcid);
+	pybar_ttree->SetBranchAddress("TDC", pybar_tdc);
+	pybar_ttree->SetBranchAddress("TDC_time_stamp", pybar_tdc_time_stamp);
+	pybar_ttree->SetBranchAddress("trigger_status", pybar_trigger_status);
+	pybar_ttree->SetBranchAddress("service_record", pybar_service_record);
+	pybar_ttree->SetBranchAddress("event_status", pybar_event_status);
 
 	// Judith branches
-	hits->Branch("NHits", &judith_n_hits, "NHits/I");
-	hits->Branch("PixX", judith_hit_pix_x, "HitPixX[NHits]/I");
-	hits->Branch("PixY", judith_hit_pix_y, "HitPixY[NHits]/I");
-	hits->Branch("Value", judith_hit_value, "HitValue[NHits]/I");
-	hits->Branch("Timing", judith_hit_timing, "HitTiming[NHits]/I");
-	hits->Branch("InCluster", judith_hit_in_cluster, "HitInCluster[NHits]/I");
-	hits->Branch("PosX", judith_hit_pos_x, "HitPosX[NHits]/D");
-	hits->Branch("PosY", judith_hit_pos_y, "HitPosY[NHits]/D");
-	hits->Branch("PosZ", judith_hit_pos_z, "HitPosZ[NHits]/D");
-	hits->Branch("Tdc", judith_tdc, "HitTdc[NHits]/s");
-	hits->Branch("TdcTs", judith_tdc_time_stamp, "HitTdcTs[NHits]/s");
-	hits->Branch("TriggerStatus", judith_trigger_status, "HitTriggerStatus[NHits]/b");
-	hits->Branch("EventStatus", judith_event_status, "HitEventStatus[NHits]/s");
+	hits_ttree->Branch("NHits", &judith_n_hits, "NHits/I");
+	hits_ttree->Branch("PixX", judith_hit_pix_x, "HitPixX[NHits]/I");
+	hits_ttree->Branch("PixY", judith_hit_pix_y, "HitPixY[NHits]/I");
+	hits_ttree->Branch("Value", judith_hit_value, "HitValue[NHits]/I");
+	hits_ttree->Branch("Timing", judith_hit_timing, "HitTiming[NHits]/I");
+	hits_ttree->Branch("InCluster", judith_hit_in_cluster, "HitInCluster[NHits]/I");
+	hits_ttree->Branch("PosX", judith_hit_pos_x, "HitPosX[NHits]/D");
+	hits_ttree->Branch("PosY", judith_hit_pos_y, "HitPosY[NHits]/D");
+	hits_ttree->Branch("PosZ", judith_hit_pos_z, "HitPosZ[NHits]/D");
+	hits_ttree->Branch("Tdc", judith_tdc, "HitTdc[NHits]/s");
+	hits_ttree->Branch("TdcTs", judith_tdc_time_stamp, "HitTdcTs[NHits]/s");
+	hits_ttree->Branch("TriggerStatus", judith_trigger_status, "HitTriggerStatus[NHits]/b");
+	hits_ttree->Branch("EventStatus", judith_event_status, "HitEventStatus[NHits]/s");
 
 
 	// Judith event
 	Long64_t n_entries_events = 0;
 	if (fill_event) {
-		event->Branch("TimeStamp", &judith_time_stamp, "TimeStamp/l");
-		event->Branch("FrameNumber", &judith_frame_number, "FrameNumber/l");
-		event->Branch("TriggerOffset", &judith_trigger_offset, "TriggerOffset/I");
-		event->Branch("TriggerInfo", &judith_trigger_info, "TriggerInfo/I");
-		event->Branch("Invalid", &judith_invalid, "Invalid/O");
+		event_ttree->Branch("TimeStamp", &judith_time_stamp, "TimeStamp/l");
+		event_ttree->Branch("FrameNumber", &judith_frame_number, "FrameNumber/l");
+		event_ttree->Branch("TriggerOffset", &judith_trigger_offset, "TriggerOffset/I");
+		event_ttree->Branch("TriggerInfo", &judith_trigger_info, "TriggerInfo/I");
+		event_ttree->Branch("Invalid", &judith_invalid, "Invalid/O");
 	} else {
-		event->SetBranchAddress("TimeStamp", &judith_time_stamp);
-		event->SetBranchAddress("FrameNumber", &judith_frame_number);
-		event->SetBranchAddress("TriggerOffset", &judith_trigger_offset);
-		event->SetBranchAddress("TriggerInfo", &judith_trigger_info);
-		event->SetBranchAddress("Invalid", &judith_invalid);
-		n_entries_events = event->GetEntriesFast();
+		event_ttree->SetBranchAddress("TimeStamp", &judith_time_stamp);
+		event_ttree->SetBranchAddress("FrameNumber", &judith_frame_number);
+		event_ttree->SetBranchAddress("TriggerOffset", &judith_trigger_offset);
+		event_ttree->SetBranchAddress("TriggerInfo", &judith_trigger_info);
+		event_ttree->SetBranchAddress("Invalid", &judith_invalid);
+		n_entries_events = event_ttree->GetEntriesFast();
 		if (n_entries_events == 0) {
 			std::cout << "Event TTree is empty" << std::endl;
 			throw;
 		}
 	}
-	Long64_t n_entries = pybar_table->GetEntriesFast();
+	Long64_t n_entries = pybar_ttree->GetEntriesFast();
 
 	for (Long64_t i = 0; i < n_entries; i++) {
 		// entries will be overwritten in array
-		pybar_table->GetEntry(i);
+		pybar_ttree->GetEntry(i);
 		// get array length
 		Long64_t array_n_entries = (Long64_t) pybar_n_entries;
 		std::cout << "reading chunk " << i+1 << " with size " << array_n_entries << std::endl;
@@ -198,9 +198,9 @@ int pyBARTTree2JudithTTree(const char* input_file_name, const char* output_file_
 					} else {
 						judith_invalid = 0;
 					}
-					event->Fill();
+					event_ttree->Fill();
 				} else {
-					Long64_t bytes = event->GetEntry(event_counter);
+					Long64_t bytes = event_ttree->GetEntry(event_counter);
 					if (bytes == 0) {
 						std::cout << "invalid event in " << plane << " at chunk " << i+1 << " index " << j << std::endl;
 						throw;
@@ -233,7 +233,7 @@ int pyBARTTree2JudithTTree(const char* input_file_name, const char* output_file_
 				}
 				// fill hits TTree, take care of first event
 				if (event_counter != 0) {
-					hits->Fill();
+					hits_ttree->Fill();
 				}
 				// increment event counter
 				event_counter++;
@@ -275,8 +275,8 @@ int pyBARTTree2JudithTTree(const char* input_file_name, const char* output_file_
 			break;
 		}
 	}
-	// fill hits TTree of last event
-	hits->Fill();
+	// fill hits TTree with last event
+	hits_ttree->Fill();
 	// check for missing events
 	if (!fill_event && event_counter < n_entries_events) {
 		std::cout << "missing " << n_entries_events-event_counter << " events in " << plane << std::endl;
