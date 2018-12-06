@@ -61,7 +61,7 @@ int pyBARTTree2JudithTTree(const char* input_file_name, const char* output_file_
 	ULong64_t current_time_stamp;
 	ULong64_t last_time_stamp;
 	ULong64_t delta_time_stamp;
-	Float_t time_stamp_ratio;
+	Double_t time_stamp_ratio;
 
 	// pyBAR arrays
 	Long64_t pybar_n_entries;
@@ -221,8 +221,8 @@ int pyBARTTree2JudithTTree(const char* input_file_name, const char* output_file_
 						} else {
 							delta_time_stamp = current_time_stamp+(pow(2, 31)-last_time_stamp);
 						}
-						time_stamp_ratio = (Float_t) judith_delta_time_stamp / (Float_t) delta_time_stamp;
-						if (time_stamp_ratio < (1-pow(1, -2)) || time_stamp_ratio > (1+pow(1, -2))) {
+						time_stamp_ratio = (Double_t) judith_delta_time_stamp / (Double_t) delta_time_stamp;
+						if (time_stamp_ratio < (1.0-pow(1, -2)) || time_stamp_ratio > (1.0+pow(1, -2))) {
 							std::cout << "event timestamp mismatch in " << plane << " at chunk " << i+1 << " index " << j << std::endl;
 							throw;
 						}
