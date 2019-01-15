@@ -210,7 +210,7 @@ int pyBARTTree2JudithTTree(const char* input_file_name, const char* output_file_
 						std::cout << "event number mismatch in " << plane << " at chunk " << i+1 << " index " << j << std::endl;
 						throw;
 					}
-					if (check_timestamp && event_counter>=1) {
+					if (check_timestamp && event_counter>=2) {  // some files are missing the first trigger word, so check timestamp from 2nd trigger on
 						if (judith_time_stamp >= judith_last_time_stamp) {
 							judith_delta_time_stamp = (judith_time_stamp-judith_last_time_stamp);
 						} else {
